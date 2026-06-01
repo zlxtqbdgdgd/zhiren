@@ -36,15 +36,18 @@ Source: "..\dist\{#MyAppExe}"; DestDir: "{app}"; Flags: ignoreversion
   Source: "..\dist\browser\*"; DestDir: "{app}\browser"; Flags: recursesubdirs ignoreversion
 #endif
 
+[Icons]
 #ifdef HasBrowser
-  #define RunParams "-data ""{commonappdata}\zhiren\data\zhiren.json"" -browser ""{app}\browser\chrome.exe"""
+Name: "{group}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"" -browser ""{app}\browser\chrome.exe"""; WorkingDir: "{app}"
+Name: "{autodesktop}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"" -browser ""{app}\browser\chrome.exe"""; WorkingDir: "{app}"
 #else
-  #define RunParams "-data ""{commonappdata}\zhiren\data\zhiren.json"""
+Name: "{group}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"""; WorkingDir: "{app}"
+Name: "{autodesktop}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"""; WorkingDir: "{app}"
 #endif
 
-[Icons]
-Name: "{group}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; WorkingDir: "{app}"
-Name: "{autodesktop}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; WorkingDir: "{app}"
-
 [Run]
-Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; Description: "立即启动知人"; Flags: nowait postinstall skipifsilent
+#ifdef HasBrowser
+Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"" -browser ""{app}\browser\chrome.exe"""; Description: "立即启动知人"; Flags: nowait postinstall skipifsilent
+#else
+Filename: "{app}\{#MyAppExe}"; Parameters: "-data ""{commonappdata}\zhiren\data\zhiren.json"""; Description: "立即启动知人"; Flags: nowait postinstall skipifsilent
+#endif
