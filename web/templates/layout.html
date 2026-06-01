@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · 知人</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="ie-warning">检测到 Internet Explorer，本系统不支持 IE，请改用 Chrome / Edge / 360 极速模式。</div>
+{{if .User}}
+<header class="topbar">
+  <div class="brand">知人 · {{.Org}}干部信息管理</div>
+  <nav>
+    <a href="/">首页</a>
+    <a href="/cadres">查询</a>
+    <a href="/reminders">到龄提醒</a>
+    <a href="/reports">数据分析</a>
+    <a href="/export">导出</a>
+    {{if or (eq2 .User.Role "admin") (eq2 .User.Role "maintainer")}}
+      <a href="/cadres/new">新建</a>
+      <a href="/import">导入</a>
+      <a href="/batch">批量维护</a>
+    {{end}}
+    {{if eq2 .User.Role "admin"}}<a href="/admin">系统管理</a>{{end}}
+  </nav>
+  <div class="user">
+    {{.User.Display}}（{{roleLabel .User.Role}}）
+    <a href="/password">改密</a>
+    <a href="/logout">退出</a>
+  </div>
+</header>
+{{end}}
+<main class="container">
+  {{if .Flash}}<div class="flash ok">{{.Flash}}</div>{{end}}
+  {{if .Err}}<div class="flash err">{{.Err}}</div>{{end}}
+  {{.Body}}
+</main>
+<script>
+  if (document.documentMode || /MSIE|Trident/.test(navigator.userAgent)) {
+    document.getElementById('ie-warning').style.display = 'block';
+  }
+</script>
+</body>
+</html>

@@ -24,14 +24,27 @@ WizardStyle=modern
 [Languages]
 Name: "default"; MessagesFile: "compiler:Default.isl"
 
+[Dirs]
+; 数据放在所有用户可写的 ProgramData 下，避免装在 Program Files 时无写权限
+Name: "{commonappdata}\zhiren\data"; Permissions: users-modify
+
 [Files]
 Source: "..\dist\{#MyAppExe}"; DestDir: "{app}"; Flags: ignoreversion
-; TODO(v1): 绿色免安装 Chromium 浏览器随包打入 {app}\browser\，
-;           并把下方桌面快捷方式改为用它打开 http://localhost:8080
+; 绿色浏览器随包打入：若构建时 dist\browser\chrome.exe 存在，则一并安装
+#if FileExists(AddBackslash(SourcePath) + "..\dist\browser\chrome.exe")
+  #define HasBrowser
+  Source: "..\dist\browser\*"; DestDir: "{app}\browser"; Flags: recursesubdirs ignoreversion
+#endif
+
+#ifdef HasBrowser
+  #define RunParams "-data ""{commonappdata}\zhiren\data\zhiren.json"" -browser ""{app}\browser\chrome.exe"""
+#else
+  #define RunParams "-data ""{commonappdata}\zhiren\data\zhiren.json"""
+#endif
 
 [Icons]
-Name: "{group}\知人"; Filename: "{app}\{#MyAppExe}"
-Name: "{autodesktop}\知人"; Filename: "{app}\{#MyAppExe}"
+Name: "{group}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; WorkingDir: "{app}"
+Name: "{autodesktop}\知人"; Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; WorkingDir: "{app}"
 
 [Run]
-Filename: "{app}\{#MyAppExe}"; Description: "立即启动知人"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExe}"; Parameters: "{#RunParams}"; Description: "立即启动知人"; Flags: nowait postinstall skipifsilent

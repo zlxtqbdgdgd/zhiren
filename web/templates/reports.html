@@ -1,0 +1,20 @@
+<h1>数据分析 · 结构统计</h1>
+<p class="muted">干部总数：<b>{{.Report.Total}}</b>（基于当前全部记录）</p>
+
+<div class="report-grid">
+  {{range .Report.Sections}}
+  <div class="report-card">
+    <h3>{{.Title}}</h3>
+    <table class="small">
+      {{range .Buckets}}
+      <tr>
+        <td class="bl">{{.Label}}</td>
+        <td class="bn">{{.Count}}</td>
+        <td class="bar"><span style="width:{{.Count}}0px"></span></td>
+      </tr>
+      {{end}}
+    </table>
+  </div>
+  {{end}}
+</div>
+<p class="muted">需要带条件的分析？先到“查询”页筛出结果再“导出结果”，用 Excel 进一步透视。</p>

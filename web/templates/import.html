@@ -1,0 +1,21 @@
+<h1>数据导入</h1>
+
+{{if .Done}}
+<div class="flash ok">导入完成：成功新建 <b>{{.OK}}</b> 条。</div>
+{{if .Warnings}}
+<div class="flash err"><b>以下行被跳过：</b><ul>{{range .Warnings}}<li>{{.}}</li>{{end}}</ul></div>
+{{end}}
+<a class="btn" href="/cadres">查看干部列表</a>
+{{else}}
+
+{{if .Err2}}<div class="flash err">{{.Err2}}</div>{{end}}
+
+<p>支持 <b>Excel 另存的 CSV（UTF-8）</b> 文件。表头用字段名（如“姓名、性别、出生年月…”），系统按表头自动对应。
+建议先到“导出”页导出一份现有数据作为模板，照着填。</p>
+<form method="post" action="/import" enctype="multipart/form-data">
+  <input type="file" name="file" accept=".csv" required>
+  <button type="submit" class="btn primary">导入</button>
+</form>
+<p class="muted">导入仅新增记录；身份证、日期、性别等会做基础校验，不通过的行会被跳过并列出原因。
+Word / zip / zzb 等格式按计划在后续版本支持。</p>
+{{end}}

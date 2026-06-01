@@ -1,0 +1,27 @@
+<div class="page-head">
+  <h1>{{.C.Cadre.F.name}} <span class="muted">（{{.C.Cadre.ID}}）</span></h1>
+  <div>
+    {{if .CanEdit}}<a class="btn" href="/cadres/edit?id={{.C.Cadre.ID}}">编辑</a>{{end}}
+    <a class="btn" href="/cadres">返回</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  {{$c := .C.Cadre}}
+  {{range .Fields}}
+    <div class="cell"><div class="k">{{.Label}}</div><div class="v">{{index $c.F .Key}}</div></div>
+  {{end}}
+  <div class="cell"><div class="k">年龄（计算）</div><div class="v">{{.C.Age}}</div></div>
+  <div class="cell"><div class="k">工作年限（计算）</div><div class="v">{{.C.WorkYears}}</div></div>
+  <div class="cell"><div class="k">到龄时间{{if .C.Cadre.RetireOverride}}（手工覆盖）{{else}}（计算）{{end}}</div><div class="v">{{.C.Retire}}</div></div>
+</div>
+
+<h2>家庭主要成员及社会关系</h2>
+{{if .C.Cadre.Family}}
+<table>
+  <tr><th>称谓</th><th>姓名</th><th>出生年月</th><th>政治面貌</th><th>工作单位及职务</th></tr>
+  {{range .C.Cadre.Family}}
+  <tr><td>{{.Relation}}</td><td>{{.Name}}</td><td>{{.BirthDate}}</td><td>{{.PoliticalStatus}}</td><td>{{.WorkUnitPos}}</td></tr>
+  {{end}}
+</table>
+{{else}}<p class="muted">未填写。</p>{{end}}

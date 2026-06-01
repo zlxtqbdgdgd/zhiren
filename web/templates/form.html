@@ -1,0 +1,68 @@
+{{$c := .C.Cadre}}
+<h1>{{if .New}}新建干部{{else}}编辑干部 · {{$c.F.name}}{{end}}</h1>
+
+{{if .Errors}}
+<div class="flash err"><b>请修正以下问题：</b><ul>{{range .Errors}}<li>{{.}}</li>{{end}}</ul></div>
+{{end}}
+
+<form method="post" action="{{if .New}}/cadres/new{{else}}/cadres/edit{{end}}">
+  {{if not .New}}<input type="hidden" name="id" value="{{$c.ID}}">{{end}}
+
+  <div class="form-grid">
+    {{range .Fields}}
+      <label class="{{if eq2 .Kind "textarea"}}wide{{end}}">
+        <span>{{.Label}}{{if .Required}} <i class="req">*</i>{{end}}</span>
+        {{if eq2 .Kind "textarea"}}
+          <textarea name="{{.Key}}" rows="3">{{index $c.F .Key}}</textarea>
+        {{else if eq2 .Kind "enum"}}
+          {{$key := .Key}}
+          <select name="{{.Key}}">
+            <option value=""></option>
+            {{range .Options}}<option value="{{.}}" {{if eq2 (index $c.F $key) .}}selected{{end}}>{{.}}</option>{{end}}
+          </select>
+        {{else if eq2 .Kind "date"}}
+          <input name="{{.Key}}" value="{{index $c.F .Key}}" placeholder="如 2020-03 或 2020-03-15">
+        {{else}}
+          <input name="{{.Key}}" value="{{index $c.F .Key}}">
+        {{end}}
+      </label>
+    {{end}}
+    <label><span>到龄时间（手工覆盖，留空则自动计算）</span>
+      <input name="retire_override" value="{{$c.RetireOverride}}" placeholder="如 2030-05"></label>
+  </div>
+
+  <h2>家庭主要成员及社会关系</h2>
+  <table id="family">
+    <tr><th>称谓</th><th>姓名</th><th>出生年月</th><th>政治面貌</th><th>工作单位及职务</th><th></th></tr>
+    {{range $c.Family}}
+    <tr>
+      <td><input name="fam_relation" value="{{.Relation}}"></td>
+      <td><input name="fam_name" value="{{.Name}}"></td>
+      <td><input name="fam_birth" value="{{.BirthDate}}"></td>
+      <td><input name="fam_political" value="{{.PoliticalStatus}}"></td>
+      <td><input name="fam_workpos" value="{{.WorkUnitPos}}"></td>
+      <td><button type="button" class="link danger" onclick="this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode)">移除</button></td>
+    </tr>
+    {{end}}
+  </table>
+  <button type="button" class="btn" onclick="addFam()">＋ 添加家庭成员</button>
+
+  <div class="actions">
+    <button type="submit" class="btn primary">保存</button>
+    <a class="btn" href="/cadres">取消</a>
+  </div>
+</form>
+
+<script>
+function addFam() {
+  var t = document.getElementById('family');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><input name="fam_relation"></td>'
+    + '<td><input name="fam_name"></td>'
+    + '<td><input name="fam_birth"></td>'
+    + '<td><input name="fam_political"></td>'
+    + '<td><input name="fam_workpos"></td>'
+    + '<td><button type="button" class="link danger" onclick="var r=this.parentNode.parentNode;r.parentNode.removeChild(r)">移除</button></td>';
+  t.appendChild(tr);
+}
+</script>

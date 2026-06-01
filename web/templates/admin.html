@@ -1,0 +1,105 @@
+<h1>系统管理</h1>
+
+<section class="panel">
+  <h2>账号管理</h2>
+  <table>
+    <tr><th>用户名</th><th>显示名</th><th>角色</th><th>状态</th><th>重置密码</th><th>操作</th></tr>
+    {{range .Users}}{{$u := .}}
+    <form method="post" action="/admin/users">
+    <tr>
+      <td>{{.Username}}<input type="hidden" name="username" value="{{.Username}}"></td>
+      <td><input name="display" value="{{.Display}}"></td>
+      <td><select name="role">{{range $.Roles}}<option value="{{.}}" {{if eq2 $u.Role .}}selected{{end}}>{{roleLabel .}}</option>{{end}}</select></td>
+      <td><label><input type="checkbox" name="disabled" value="1" {{if .Disabled}}checked{{end}}> 停用</label></td>
+      <td><input name="password" type="password" placeholder="留空不改"></td>
+      <td class="ops">
+        <button type="submit" name="action" value="update" class="link">保存</button>
+        <button type="submit" name="action" value="delete" class="link danger" onclick="return confirm('删除账号？')">删除</button>
+      </td>
+    </tr>
+    </form>
+    {{end}}
+  </table>
+
+  <h3>新建账号</h3>
+  <form method="post" action="/admin/users" class="inline">
+    <input type="hidden" name="action" value="create">
+    <input name="username" placeholder="用户名" required>
+    <input name="display" placeholder="显示名">
+    <select name="role">{{range .Roles}}<option value="{{.}}">{{roleLabel .}}</option>{{end}}</select>
+    <input name="password" type="password" placeholder="初始密码" required>
+    <button type="submit" class="btn primary">创建</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>退休年龄规则</h2>
+  <p class="muted">按“性别 × 身份”匹配最具体的一条得出退休周岁。空=不限。到龄时间 = 出生年月 + 退休周岁；个别特殊情况可在干部编辑页“手工覆盖到龄时间”。</p>
+  <form method="post" action="/admin/rules">
+    <table id="rules">
+      <tr><th>性别</th><th>身份</th><th>退休周岁</th><th></th></tr>
+      {{range .Rules}}{{$r := .}}
+      <tr>
+        <td><select name="rule_gender">{{range $.Genders}}<option value="{{.}}" {{if eq2 $r.Gender .}}selected{{end}}>{{if eq2 . ""}}（不限）{{else}}{{.}}{{end}}</option>{{end}}</select></td>
+        <td><select name="rule_identity">{{range $.Identities}}<option value="{{.}}" {{if eq2 $r.Identity .}}selected{{end}}>{{if eq2 . ""}}（不限）{{else}}{{.}}{{end}}</option>{{end}}</select></td>
+        <td><input name="rule_age" type="number" value="{{$r.AgeYears}}"></td>
+        <td><button type="button" class="link danger" onclick="var x=this.parentNode.parentNode;x.parentNode.removeChild(x)">移除</button></td>
+      </tr>
+      {{end}}
+    </table>
+    <button type="button" class="btn" onclick="addRule()">＋ 添加规则</button>
+    <button type="submit" class="btn primary">保存规则</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>系统设置</h2>
+  <form method="post" action="/admin/settings" class="settings">
+    <label>单位名称<input name="org_name" value="{{.Settings.OrgName}}"></label>
+    <label>年龄输出带月份<input type="checkbox" name="age_with_months" value="1" {{if .Settings.AgeWithMonths}}checked{{end}}></label>
+    <label>工作年限带天数<input type="checkbox" name="work_years_with_days" value="1" {{if .Settings.WorkYearsWithDays}}checked{{end}}></label>
+    <label>到龄提醒范围（月）<input name="reminder_window_months" type="number" value="{{.Settings.ReminderWindowMonths}}"></label>
+    <label>备份目录<input name="backup_dir" value="{{.Settings.BackupDir}}"></label>
+    <label>备份保留份数<input name="backup_keep" type="number" value="{{.Settings.BackupKeep}}"></label>
+    <label>自动备份间隔（小时）<input name="backup_every_hours" type="number" value="{{.Settings.BackupEveryHours}}"></label>
+    <button type="submit" class="btn primary">保存设置</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>备份与恢复</h2>
+  <form method="post" action="/admin/backup"><button type="submit" class="btn primary">立即备份</button></form>
+  <table class="small">
+    <tr><th>备份文件</th><th>操作</th></tr>
+    {{range .Backups}}
+    <tr><td>{{.}}</td><td>
+      <form method="post" action="/admin/restore" onsubmit="return confirm('确认用该备份覆盖当前数据？建议先做一次立即备份。')">
+        <input type="hidden" name="name" value="{{.}}">
+        <button type="submit" class="link">恢复</button>
+      </form>
+    </td></tr>
+    {{end}}
+  </table>
+</section>
+
+<section class="panel">
+  <h2>操作日志（最近 50 条）</h2>
+  <table class="small">
+    <tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>说明</th></tr>
+    {{range .AuditTail}}
+    <tr><td>{{.Time.Format "2006-01-02 15:04:05"}}</td><td>{{.User}}</td><td>{{.Action}}</td><td>{{.Target}}</td><td>{{.Detail}}</td></tr>
+    {{end}}
+  </table>
+</section>
+
+<script>
+function addRule() {
+  var t = document.getElementById('rules');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><select name="rule_gender"><option value="">（不限）</option><option>男</option><option>女</option></select></td>'
+    + '<td><select name="rule_identity"><option value="">（不限）</option><option>干部</option><option>工人</option><option>其他</option></select></td>'
+    + '<td><input name="rule_age" type="number"></td>'
+    + '<td><button type="button" class="link danger" onclick="var x=this.parentNode.parentNode;x.parentNode.removeChild(x)">移除</button></td>';
+  t.appendChild(tr);
+}
+</script>
