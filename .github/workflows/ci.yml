@@ -1,0 +1,19 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.20'
+      - name: go vet
+        run: go vet ./...
+      - name: 交叉编译 Windows exe（验证可编译）
+        run: GOOS=windows GOARCH=amd64 go build -o /tmp/zhiren.exe .
