@@ -22,6 +22,25 @@ jobs:
           go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" -o dist/zhiren.exe .
       - name: 安装 Inno Setup
         run: choco install innosetup --no-progress -y
+      - name: 下载并打入绿色浏览器（ungoogled-chromium 109，兼容 Win7）
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $repo = "ungoogled-software/ungoogled-chromium-windows"
+          $tag = gh release list -R $repo --limit 200 --json tagName -q '[.[].tagName | select(startswith("109."))][0]'
+          if (-not $tag) { throw "未找到 109 版本的 ungoogled-chromium" }
+          Write-Host "使用浏览器版本: $tag"
+          New-Item -ItemType Directory -Force -Path _br | Out-Null
+          gh release download $tag -R $repo -p "*windows_x64.zip" -D _br
+          $zip = Get-ChildItem _br\*.zip | Select-Object -First 1
+          if (-not $zip) { throw "未下载到浏览器压缩包" }
+          Expand-Archive -Path $zip.FullName -DestinationPath _br\x -Force
+          $chrome = Get-ChildItem -Recurse -Path _br\x -Filter chrome.exe | Select-Object -First 1
+          if (-not $chrome) { throw "压缩包内未找到 chrome.exe" }
+          New-Item -ItemType Directory -Force -Path dist\browser | Out-Null
+          Copy-Item -Path (Join-Path $chrome.Directory.FullName '*') -Destination dist\browser -Recurse -Force
+          Write-Host "绿色浏览器已就位: dist\browser\chrome.exe"
       - name: 编译安装包
         shell: pwsh
         run: |
